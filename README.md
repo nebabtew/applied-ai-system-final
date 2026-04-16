@@ -65,7 +65,6 @@ graph TD
     I --> J[Display in terminal]
     J --> K[End]
 ```
-![Algorithm recipie](<Algorithm Recipe.png>)
 
 ## Terminal Output Screenshot
 ![Recommendations output ](Result.png)
