@@ -17,17 +17,55 @@ Replace this paragraph with your own summary of what your version does.
 
 ## How The System Works
 
-Explain your design in plain language.
+Real platforms like Spotify use two main approaches: collaborative filtering, 
+which recommends songs based on what similar users listened to, and content-based 
+filtering, which recommends songs based on the attributes of the song itself 
+(like genre, mood, and energy). My version uses content-based filtering because 
+I have a small catalog with known song attributes and no large user behavior history.
 
-Some prompts to answer:
+**Features each Song uses:**
+- genre (e.g., pop, rock, jazz)
+- mood (e.g., happy, sad, energetic)
+- energy (0.0 = mellow, 1.0 = intense)
+- acousticness (0.0 = electronic, 1.0 = acoustic)
+- tempo_bpm (not used in scoring yet — future improvement)
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+**What the UserProfile stores:**
+- favorite_genre
+- favorite_mood
+- target_energy
+- target_acousticness 
 
-You can include a simple diagram or bullet list if helpful.
+**Algorithm Recipe:**
+- +2.0 points for genre match
+- +1.0 point for mood match  
+- Up to +1.0 for energy proximity: score = 1.0 - abs(song_energy - target_energy)
+- Up to +1.0 for acousticness proximity: score = 1.0 - abs(song_acousticness - target_acousticness)
+- Maximum possible score: 5.0
+- Songs are ranked highest to lowest, top-k returned
+  
+**How songs are chosen:**
+Every song in the catalog gets scored, then the top-k highest scores are returned 
+as recommendations.
+
+```mermaid
+graph TD
+    A[Start] --> B[User Preferences]
+    B --> C[Load Songs from CSV]
+    C --> D[Pick next song]
+    D --> E[Score the song]
+    E --> F[Add score to results]
+    F --> G{More songs?}
+    G -->|Yes| D
+    G -->|No| H[Sort by score]
+    H --> I[Return top K songs]
+    I --> J[Display in terminal]
+    J --> K[End]
+```
+![Algorithm recipie](<Algorithm Recipe.png>)
+
+## Terminal Output Screenshot
+![Recommendations output ](Result.png)
 
 ---
 

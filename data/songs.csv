@@ -9,3 +9,11 @@ id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
 8,Night Drive Loop,Neon Echo,synthwave,moody,0.75,110,0.49,0.73,0.22
 9,Focus Flow,LoRoom,lofi,focused,0.40,80,0.59,0.60,0.78
 10,Rooftop Lights,Indigo Parade,indie pop,happy,0.76,124,0.81,0.82,0.35
+11,Midnight Blues,Soul Echo,R&B,sad,0.25,85,0.32,0.45,0.78
+12,Moonlight Sonata,Classical Dreams,classical,romantic,0.15,72,0.75,0.28,0.95
+13,Street Fury,Urban Beast,hip-hop,angry,0.88,95,0.35,0.92,0.12
+14,Riverbank Serenade,Country Heart,country,peaceful,0.35,110,0.68,0.52,0.85
+15,Neon Pulse,Electro Wave,electronic,sad,0.60,128,0.40,0.78,0.08
+16,Sweet Whispers,Rhythm & Soul,R&B,romantic,0.45,92,0.82,0.65,0.55
+17,Tempest Overture,Symphonic Storm,classical,angry,0.20,140,0.25,0.35,0.90
+18,Whispering Pines,Rustic Harmony,country,peaceful,0.30,98,0.70,0.48,0.88

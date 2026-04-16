@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from src.recommender import load_songs; songs = load_songs\\('data/songs.csv'\\); print\\(f'Loaded {len\\(songs\\)} songs'\\); print\\('First song:', songs[0]\\)\")",
+      "Bash(.venv/Scripts/python -c \"from src.recommender import load_songs; songs = load_songs\\('data/songs.csv'\\); print\\(f'Loaded {len\\(songs\\)} songs'\\); print\\('First song:', songs[0]\\)\")"
+    ]
+  }
+}
