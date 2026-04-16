@@ -24,22 +24,24 @@ This is a content-based music recommender simulation. All logic lives in two sou
 **[src/recommender.py](src/recommender.py)** — the core module. Contains:
 - `Song` dataclass — attributes: `id`, `title`, `artist`, `genre`, `mood`, `energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`
 - `UserProfile` dataclass — preference fields: `favorite_genre`, `favorite_mood`, `target_energy`, `likes_acoustic`
-- `Recommender` class (OOP API) — `recommend(user, k)` and `explain_recommendation(user, song)` — both are stubs to implement
-- `load_songs(csv_path)` — reads `data/songs.csv` into a list of dicts — stub to implement
-- `score_song(user_prefs, song)` — scores a single dict-based song against dict-based preferences, returns `(float, List[str])` — stub to implement
-- `recommend_songs(user_prefs, songs, k)` — ranks all songs and returns top-k as `List[Tuple[dict, float, str]]` — stub to implement
+- `Recommender` class (OOP API) — `recommend(user, k)` and `explain_recommendation(user, song)` — **stubs that still need implementing**
+- `load_songs(csv_path)` — reads `data/songs.csv` into a list of dicts — already implemented
+- `score_song(user_prefs, song)` — scores a single dict-based song against dict-based preferences, returns `(float, List[str])` — already implemented
+- `recommend_songs(user_prefs, songs, k)` — ranks all songs and returns top-k as `List[Tuple[dict, float, str]]` — already implemented
 
-**[src/main.py](src/main.py)** — thin CLI runner. Calls `load_songs` then `recommend_songs` and prints results. Uses dict-based API (not the OOP classes).
+**[src/main.py](src/main.py)** — thin CLI runner. Calls `load_songs` then `recommend_songs` with five hardcoded user profiles and prints results. Uses dict-based API only.
 
 **Two parallel APIs exist intentionally:**
 - Dict-based functions (`load_songs`, `score_song`, `recommend_songs`) are used by `src/main.py`
 - OOP classes (`Song`, `UserProfile`, `Recommender`) are used by `tests/test_recommender.py`
 
-Both must be implemented to satisfy tests and run the app.
+**Key implementation detail — key name mismatch:** `score_song` expects dict keys `genre`, `mood`, `energy`, `acousticness`, but `UserProfile` uses `favorite_genre`, `favorite_mood`, `target_energy`, `likes_acoustic`. When implementing `Recommender.recommend()`, you must convert the `UserProfile` fields into the dict shape that `score_song` expects.
 
-**Data:** `data/songs.csv` — columns match `Song` fields exactly. Songs have numeric attributes (`energy`, `valence`, `danceability`, `acousticness`) in the range [0.0, 1.0]; `tempo_bpm` is in beats per minute.
+**Scoring logic** (in `score_song`): genre match (+2.0), mood match (+1.0), energy proximity (up to 1.0), acousticness proximity (up to 1.0). Max score is 5.0. Sorted descending.
 
-**Tests:** `tests/test_recommender.py` imports from `src.recommender`. Tests assert that `recommend()` returns results sorted so that the best-matching song (by genre + mood + energy) ranks first, and that `explain_recommendation()` returns a non-empty string.
+**Data:** `data/songs.csv` — columns match `Song` fields exactly. Numeric attributes (`energy`, `valence`, `danceability`, `acousticness`) are in range [0.0, 1.0]; `tempo_bpm` is in BPM.
+
+**Tests:** `tests/test_recommender.py` uses only the OOP API. `test_recommend_returns_songs_sorted_by_score` asserts the pop/happy/high-energy song ranks first for a matching user profile. `test_explain_recommendation_returns_non_empty_string` asserts a non-empty string is returned.
 
 ## Assignment Context
 
