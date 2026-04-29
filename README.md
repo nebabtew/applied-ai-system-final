@@ -1,144 +1,64 @@
-# 🎵 Music Recommender Simulation
+# VibeFinder 2.0: Applied AI Music Recommender
 
-## Project Summary
+**Summary**  
+VibeFinder 2.0 is an applied AI system that extends a static, content-based music recommender into a dynamic, Retrieval-Augmented Generation (RAG) pipeline. It calculates personalized song recommendations based on user profiles and leverages Gemini 1.5 Flash to generate grounded, explainable reasoning for why each song fits the user's vibe, complete with automated hallucination guardrails.
 
-In this project you will build and explain a small music recommender system.
+**Base Project: VibeFinder 1.0**  
+This system extends my original "Module 3 Music Recommender Simulation" (VibeFinder 1.0). That initial project loaded a CSV catalog of 18 songs and used hardcoded math (proximity scoring) to rank songs based solely on genre and mood overlap with a user's profile.
 
-Your goal is to:
+**What's New in 2.0**  
+- **RAG Retriever:** A TF-IDF search engine that queries a custom Markdown knowledge base of genres and moods.
+- **Gemini Explainer:** An LLM that uses grounded context to write 2-3 sentence explanations for recommendations.
+- **Hallucination Guardrail:** An automated "LLM-as-a-Judge" pipeline that docks confidence scores if the explainer invents facts or exceeds length limits.
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+**Architecture Overview**  
+![System Architecture](assets/architecture.png)  
+When a user profile is submitted via the CLI, the static recommender selects the top-k songs from the catalog. The RAG Retriever then pulls relevant Markdown chunks for those specific genres and moods, passing them to Gemini to generate an explanation. Finally, the guardrail validates the explanation against the retrieved chunks, returning a confidence score to the terminal.
 
-VibeFinder 1.0 is a content-based music recommender that scores 
-18 songs against a user taste profile using genre, mood, energy, 
-and acousticness. It ranks songs by weighted score and returns 
-the top 5 recommendations with explanations.
+**Setup Instructions**  
+1. Clone the repository to your local machine.
+2. Create and activate a virtual environment (PowerShell):
+   `python -m venv venv`
+   `.\venv\Scripts\activate`
+3. Install dependencies:
+   `pip install -r requirements.txt`
+4. Create a `.env` file in the root directory and add your API key:
+   `GEMINI_API_KEY=your_actual_key_here`
+5. Run the end-to-end pipeline:
+   `python -m src.main`
 
----
-
-## How The System Works
-
-Real platforms like Spotify use two main approaches: collaborative filtering, 
-which recommends songs based on what similar users listened to, and content-based 
-filtering, which recommends songs based on the attributes of the song itself 
-(like genre, mood, and energy). My version uses content-based filtering because 
-I have a small catalog with known song attributes and no large user behavior history.
-
-**Features each Song uses:**
-- genre (e.g., pop, rock, jazz)
-- mood (e.g., happy, sad, energetic)
-- energy (0.0 = mellow, 1.0 = intense)
-- acousticness (0.0 = electronic, 1.0 = acoustic)
-- tempo_bpm (not used in scoring yet — future improvement)
-
-**What the UserProfile stores:**
-- favorite_genre
-- favorite_mood
-- target_energy
-- target_acousticness 
-
-**Algorithm Recipe:**
-- +2.0 points for genre match
-- +1.0 point for mood match  
-- Up to +1.0 for energy proximity: score = 1.0 - abs(song_energy - target_energy)
-- Up to +1.0 for acousticness proximity: score = 1.0 - abs(song_acousticness - target_acousticness)
-- Maximum possible score: 5.0
-- Songs are ranked highest to lowest, top-k returned
-  
-**How songs are chosen:**
-Every song in the catalog gets scored, then the top-k highest scores are returned 
-as recommendations.
-
-```mermaid
-graph TD
-    A[Start] --> B[User Preferences]
-    B --> C[Load Songs from CSV]
-    C --> D[Pick next song]
-    D --> E[Score the song]
-    E --> F[Add score to results]
-    F --> G{More songs?}
-    G -->|Yes| D
-    G -->|No| H[Sort by score]
-    H --> I[Return top K songs]
-    I --> J[Display in terminal]
-    J --> K[End]
+**Sample Interactions**  
+```text
+PROFILE: Late Night R&B
+  genre=R&B  mood=sad  energy=0.3  acousticness=0.6
+============================================================
+Midnight Blues — Soul Echo
+  genre=R&B  mood=sad  score=4.77
+  context: [genre:r&b, mood:sad, mood:romantic]
+  explanation: "Midnight Blues" fits your vibe perfectly as an R&B song, a genre known for intimate emotional storytelling and vulnerability, aligning with your favorite. Its sad mood channels grief and longing, providing a space for emotional release and pairing well with R&B for late-night reflection, as described in the context. Additionally, the song's low energy (0.25) is typical for R&B's low-to-medium range, and its high acousticness (0.78) is a common sonic marker for sad music, matching your preferences.
+  confidence=1.00 | passed=True
 ```
 
-## Terminal Output Screenshot
-![Recommendations output ](Result.png)
-![rnb late night](latenight.png) 
-![pop energy](popenergy.png)
- ![LO-FI](lofi.png) 
- ![adversa;Rock](<adversal rock.png>)
----
+**Reliability & Guardrails**  
+The guardrail enforces three strict checks. 
+1. **Lexical Check:** Ensures the LLM did not generate forbidden hallucination trigger words (e.g., "released in", "Billboard"). 
+2. **Length Check:** Validates that the explanation strictly adheres to the 2-3 sentence constraint provided in the system prompt. 
+3. **LLM-as-a-Judge Grounding:** Uses Gemini to cross-reference the output against the retrieved chunks to ensure no external knowledge was injected. If an explanation fails these checks, the confidence score drops accordingly.
 
-## Getting Started
+**Design Decisions**  
+- **TF-IDF over Embeddings:** For a highly structured, keyword-dense knowledge base (genres and moods), TF-IDF is faster, cheaper, and more accurate than dense vector embeddings.
+- **Gemini 1.5 Flash:** Chosen for its speed and generous free tier, making it ideal for processing multiple RAG explanations in a CLI loop.
+- **Content-Based Recommender:** Retained from VibeFinder 1.0 because collaborative filtering suffers from the "cold start" problem without massive user datasets.
 
-### Setup
+**Testing Summary**  
+Unit tests execute successfully via `python -m pytest`. The guardrail script (`evaluator.py`) successfully caught hallucinations across three controlled test cases, correctly dropping confidence scores to 0.20 when the LLM invented release years and chart data.
 
-1. Create a virtual environment (optional but recommended):
+**Loom Walkthrough**  
+[Insert Loom Video Link Here]
 
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
+**Reflection & AI Collaboration**  
+AI was instrumental in accelerating the architecture of this system. I used it heavily for scaffolding the RAG file structure and generating the `google-genai` integration scripts, allowing me to focus on prompt engineering and system design rather than boilerplate code.
 
-2. Install dependencies
+A highly helpful AI suggestion occurred during the retriever design. Claude Code correctly suggested using a TF-IDF implementation via `scikit-learn` rather than a complex vector database, which perfectly matched the scope and scale of my 24-document knowledge base. Conversely, a flawed AI suggestion occurred during the knowledge base creation. When asked to batch-generate the Markdown files, the AI simply created 6 empty mood files instead of populating them with the requested content, requiring manual intervention to write the data.
 
-```bash
-pip install -r requirements.txt
-```
-
-3. Run the app:
-
-```bash
-python -m src.main
-```
-
-### Running Tests
-
-Run the starter tests with:
-
-```bash
-pytest
-```
-
-You can add more tests in `tests/test_recommender.py`.
-
----
-
-## Experiments You Tried
-
-- Tested 5 user profiles: Late Night R&B, Pop Energy, Chill Lofi, 
-  Adversarial Rock, and Adversarial Neutral
-- Halved genre weight (2.0 to 1.0) and doubled energy weight — 
-  changed Adversarial Neutral #1 from Tempest Overture to Rooftop Lights
-- Discovered genre weight dominates all other scoring factors
-
----
-
-## Limitations and Risks
-
-- Only works on 18 songs, too small for real use
-- Does not understand lyrics, language, or cultural context
-- Over-favors genre matches due to +2.0 weight
-- Binary matching means indie pop and pop are treated as different
-- Ignores valence, danceability, and tempo even though they are in the data
-- Top 5 results could all be the same genre
-
----
-
-## Reflection
-
-Read and complete `model_card.md`:
-
-[**Model Card**](model_card.md)
-
-My biggest learning moment in this project was discovering how  a single weight can create a filter bubble. When I set genre  to +2.0 points, I didn't realize it would dominate every other  factor. The adversarial experiment proved it — when I halved  the genre weight, the #1 recommendation completely changed.  That's when it clicked: real platforms like Spotify have to  carefully balance these weights or users get trapped hearing  the same thing forever.
-
-Using Copilot throughout this project saved a lot of time but  required constant double-checking. The biggest mistake it almost caused was using inconsistent key names — "favorite_genre" in 
-one file and "genre" in another — which would have broken the  scoring function silently. I learned that AI tools are great for generating structure and boilerplate, but the logic still  needs human review. I also used Copilot to expand my dataset from 10 to 18 songs, which reduced the pop/lofi bias and made stress testing more meaningful.
-
-What surprised me most was how "real" even a simple 4-feature system feels when it works. When Midnight Blues ranked #1 with 4.77/5.0 for the Late Night Vibes profile, it genuinely felt like a good recommendation. That made me think differently about  Spotify and Apple Music — their recommendations feel magical but  are probably just much larger versions of the same math. The difference is they have millions of songs, user behavior data, and diversity logic that prevents filter bubbles from forming.
+The biggest limitation of this system is that the LLM is restricted by the small 18-song baseline catalog and a heavily sanitized knowledge base. Future iterations could integrate Spotify's API for dynamic catalog generation and utilize a full vector database (like ChromaDB) to retrieve complex music theory documentation.
