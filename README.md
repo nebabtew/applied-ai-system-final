@@ -10,9 +10,9 @@ This system extends my original "Module 3 Music Recommender Simulation" (VibeFin
 - **RAG Retriever:** A TF-IDF search engine that queries a custom Markdown knowledge base of genres and moods.
 - **Gemini Explainer:** An LLM that uses grounded context to write 2-3 sentence explanations for recommendations.
 - **Hallucination Guardrail:** An automated "LLM-as-a-Judge" pipeline that docks confidence scores if the explainer invents facts or exceeds length limits.
-
+ 
 **Architecture Overview**  
-![System Architecture](assets/architecture.png)  
+![System Architecture](assets/architecture.jpg)  
 When a user profile is submitted via the CLI, the static recommender selects the top-k songs from the catalog. The RAG Retriever then pulls relevant Markdown chunks for those specific genres and moods, passing them to Gemini to generate an explanation. Finally, the guardrail validates the explanation against the retrieved chunks, returning a confidence score to the terminal.
 
 **Setup Instructions**  
@@ -27,17 +27,17 @@ When a user profile is submitted via the CLI, the static recommender selects the
 5. Run the end-to-end pipeline:
    `python -m src.main`
 
-**Sample Interactions**  
-```text
-PROFILE: Late Night R&B
-  genre=R&B  mood=sad  energy=0.3  acousticness=0.6
-============================================================
-Midnight Blues — Soul Echo
-  genre=R&B  mood=sad  score=4.77
-  context: [genre:r&b, mood:sad, mood:romantic]
-  explanation: "Midnight Blues" fits your vibe perfectly as an R&B song, a genre known for intimate emotional storytelling and vulnerability, aligning with your favorite. Its sad mood channels grief and longing, providing a space for emotional release and pairing well with R&B for late-night reflection, as described in the context. Additionally, the song's low energy (0.25) is typical for R&B's low-to-medium range, and its high acousticness (0.78) is a common sonic marker for sad music, matching your preferences.
-  confidence=1.00 | passed=True
-```
+**Sample Interactions**    
+Below are the results of running the VibeFinder 2.0 pipeline across three distinct user profiles. Notice how the guardrail evaluates each explanation.
+
+*Late Night R&B Profile:*
+![Late Night Profile Output](assets/profile-latenight.jpg)
+
+*Pop Energy Profile:*
+![Pop Energy Profile Output](assets/profile-pop.jpg)
+
+*Chill Lofi Profile:*
+![Chill Lofi Profile Output](assets/profile-lofi.jpg)
 
 **Reliability & Guardrails**  
 The guardrail enforces three strict checks. 
