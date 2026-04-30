@@ -58,8 +58,8 @@ An explanation **passes** (`passed = True`) when `confidence >= 0.7`.
 **Testing Summary**  
 Unit tests execute successfully via `python -m pytest`. The guardrail script (`evaluator.py`) successfully caught hallucinations across three controlled test cases, correctly dropping confidence scores to 0.20 when the LLM invented release years and chart data.
 
-**Loom Walkthrough**  
-[Insert Loom Video Link Here]
+[Watch the walkthrough on Loom](https://www.loom.com/share/54d8c75bfae7444ba1a8fcfc74fab59a)
+
 
 **Reflection & AI Collaboration**  
 AI was instrumental in accelerating the architecture of this system. I used it heavily for scaffolding the RAG file structure and generating the `google-genai` integration scripts, allowing me to focus on prompt engineering and system design rather than boilerplate code.
