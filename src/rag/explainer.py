@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 load_dotenv()
 
@@ -12,7 +12,7 @@ def explain(
     retrieved_chunks: list,
     model_name: str = "gemini-2.5-flash",
 ) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key:
         return "[LLM unavailable] Recommended based on genre and mood match."
 
@@ -47,9 +47,8 @@ RETRIEVED CONTEXT:
 """
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name)
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(model=model_name, contents=prompt)
         return response.text
     except Exception:
         return "[LLM unavailable] Recommended based on genre and mood match."

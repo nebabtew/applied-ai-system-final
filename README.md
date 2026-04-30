@@ -9,10 +9,10 @@ This system extends my original "Module 3 Music Recommender Simulation" (VibeFin
 **What's New in 2.0**  
 - **RAG Retriever:** A TF-IDF search engine that queries a custom Markdown knowledge base of genres and moods.
 - **Gemini Explainer:** An LLM that uses grounded context to write 2-3 sentence explanations for recommendations.
-- **Hallucination Guardrail:** An automated "LLM-as-a-Judge" pipeline that docks confidence scores if the explainer invents facts or exceeds length limits.
+- **Hallucination Guardrail:** A deterministic pipeline that docks confidence scores for length violations, low lexical overlap with retrieved chunks, or forbidden hallucination patterns.
  
 **Architecture Overview**  
-![System Architecture](assets/architecture.jpg)  
+![System Architecture](assets/architecture.png)  
 When a user profile is submitted via the CLI, the static recommender selects the top-k songs from the catalog. The RAG Retriever then pulls relevant Markdown chunks for those specific genres and moods, passing them to Gemini to generate an explanation. Finally, the guardrail validates the explanation against the retrieved chunks, returning a confidence score to the terminal.
 
 **Setup Instructions**  
@@ -31,19 +31,24 @@ When a user profile is submitted via the CLI, the static recommender selects the
 Below are the results of running the VibeFinder 2.0 pipeline across three distinct user profiles. Notice how the guardrail evaluates each explanation.
 
 *Late Night R&B Profile:*
-![Late Night Profile Output](assets/profile-latenight.jpg)
+
+![Late Night Profile Output](assets/profilelatenight.png)
 
 *Pop Energy Profile:*
-![Pop Energy Profile Output](assets/profile-pop.jpg)
+
+![Pop Energy Profile Output](assets/profilepop.png)
 
 *Chill Lofi Profile:*
-![Chill Lofi Profile Output](assets/profile-lofi.jpg)
+
+![Chill Lofi Profile Output](assets/profilelofi.png)
 
 **Reliability & Guardrails**  
-The guardrail enforces three strict checks. 
-1. **Lexical Check:** Ensures the LLM did not generate forbidden hallucination trigger words (e.g., "released in", "Billboard"). 
-2. **Length Check:** Validates that the explanation strictly adheres to the 2-3 sentence constraint provided in the system prompt. 
-3. **LLM-as-a-Judge Grounding:** Uses Gemini to cross-reference the output against the retrieved chunks to ensure no external knowledge was injected. If an explanation fails these checks, the confidence score drops accordingly.
+The guardrail is fully deterministic — no second LLM call is made. It starts at `confidence = 1.0` and applies three weighted checks:
+1. **Length check (−0.2):** The explanation must contain 1–5 sentences (split on `.!?`). Violations dock 0.2.
+2. **Lexical grounding check (−0.5):** At least 30% of the explanation's meaningful tokens (≥4 chars, non-stopword) must appear in the retrieved chunks. Falling below this threshold docks 0.5.
+3. **Hallucination pattern check (−0.3):** A regex scan flags year patterns (`19xx`/`20xx`), and phrases such as "released in", "peaked at", "Billboard", "Grammy", "chart", "album of the year", "debut album", and "record label". Any match docks 0.3.
+
+An explanation **passes** (`passed = True`) when `confidence >= 0.7`.
 
 **Design Decisions**  
 - **TF-IDF over Embeddings:** For a highly structured, keyword-dense knowledge base (genres and moods), TF-IDF is faster, cheaper, and more accurate than dense vector embeddings.

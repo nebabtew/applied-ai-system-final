@@ -29,7 +29,7 @@ The system correctly prioritizes primary signals (genre overlap) while using sec
 
 ## 7. Reliability Evidence and Testing
 The system was evaluated against 3 distinct user profiles ("Late Night R&B", "Pop Energy", "Chill Lofi"). 
-The guardrail component successfully caught hallucinations during Test B. When the LLM was forced to output fake details (e.g., release year and Billboard chart performance), the guardrail detected the hallucinated facts, flagged the error, and dropped the confidence score to 0.20.
+The guardrail component successfully caught hallucinations during Test B. When the LLM was forced to output fake details (e.g., release year and Billboard chart performance), two of the three checks fired: the lexical grounding check (−0.5, zero token overlap with retrieved chunks) and the hallucination pattern check (−0.3, matched "2003", "released in", "peaked at"). The length check did not fire. Final confidence: 0.20 (passed = False).
 
 ## 8. AI Collaboration Reflection
 - **Helpful AI Interaction:** Claude Code cleanly wrote the TF-IDF retriever logic using `scikit-learn` on the first try, saving significant manual development time.
